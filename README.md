@@ -1,4 +1,4 @@
-# github-release-collector
+# doorkeeper
 
 Validate your pull-request with your rule and collect release notes on your deployment pull-request.
 
