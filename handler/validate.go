@@ -58,7 +58,7 @@ func validatePullRequest(evt entity.GithubPullRequestEvent) {
 	}()
 
 	// Get .pullrequest.yml file from destination repository
-	r, err := github.Content(ctx, evt.ContentURL("/.pullrequest.yml"))
+	r, err := github.Content(ctx, evt.ContentURL("/.doorkeeper.yml"))
 	if err != nil {
 		r = rule.DefaultRule
 	}

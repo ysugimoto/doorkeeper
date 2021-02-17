@@ -25,10 +25,10 @@ Webhook server will start on "http://localhost:9000". You can change listen port
 
 ## PullRequest validation rules
 
-Webhook server will validate your PullRequest title and description, then you can customize validation rules by putting `.pullrequest.yml` on your repository root. Example setting file is following:
+Webhook server will validate your PullRequest title and description, then you can customize validation rules by putting `.doorkeeper.yml` on your repository root. Example setting file is following:
 
 ```yaml
-# .pullrequest.yml
+# .doorkeeper.yml
 title:
   - kind: prefixed
     values:
@@ -41,7 +41,7 @@ description:
       - "# What change do you intend to"
 ```
 
-`.pullrequest.yml` can have a couple of root section -- `title` and `description` -- these correspond to PullRequest title and description.
+`.doorkeeper.yml` can have a couple of root section -- `title` and `description` -- these correspond to PullRequest title and description.
 You can declare verification rule in array of `kind` and `values` object. We show all enable configurations following:
 
 | kind      | values operator | value type                      | behaves                                                 |
