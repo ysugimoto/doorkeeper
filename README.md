@@ -82,7 +82,7 @@ Implement special feature which user requested.
 Then release note is listed with `Implement special feature which user requested.` from this PullRequest.
 
 And this service can determines branch of collect relase note branch, it means `your release branch ` of webhook path following `/webhook/`.
-If you set webhook URL as `https://[TBD]/webhook/deployment/production`, release note will collect on `deployment/production` branch.
+If you set webhook URL as `https://[your.host.domain]/webhook/deployment/production`, release note will collect on `deployment/production` branch.
 
 You may want to release multiple apllication from single repository (e.g. monorepo), webhook allows to multiple branches by setting path as regex style.
-For example, If you set webhook URL as `https://[TBD]webhook/deployment/*`, we compares target branch with regular expression so you can make release note for `deployment/service-1`, `deployment/service-2` branches PullRequest.
+For example, If you set webhook URL as `https://[your.host.domain]/webhook/deployment/*`, we compares target branch with regular expression so you can make release note for `deployment/service-1`, `deployment/service-2` branches PullRequest.
