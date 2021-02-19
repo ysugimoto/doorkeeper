@@ -29,20 +29,31 @@ Webhook server will validate your PullRequest title and description, then you ca
 
 ```yaml
 # .doorkeeper.yml
-title:
-  - kind: prefixed
-    values:
-      - "feat:"
-      - "fix:"
-description:
-  - kind: contains
-    values:
-      - "# Why do we need this change"
-      - "# What change do you intend to"
+validation:
+  title:
+    - kind: prefixed
+      values:
+        - "feat:"
+        - "fix:"
+  description:
+    - kind: contains
+      values:
+        - "# Why do we need this change"
+        - "# What change do you intend to"
+releasenote:
+  branches:
+    - deployment/production
+  tags:
+    - v[0-9]+.[0-9]+.[0-9]+
+  integration:
+    slack: "[slack-incoming-webhook-url]"
 ```
 
-`.doorkeeper.yml` can have a couple of root section -- `title` and `description` -- these correspond to PullRequest title and description.
-You can declare verification rule in array of `kind` and `values` object. We show all enable configurations following:
+`.doorkeeper.yml` can define validation and relesenote configuration.
+
+On `validation` section, you can declare verification rule in array of `kind` and `values` object.
+Full validation configuration examples are following:
+
 
 | kind      | values operator | value type                      | behaves                                                 |
 |:----------|:---------------:|:--------------------------------|:--------------------------------------------------------|
@@ -51,6 +62,16 @@ You can declare verification rule in array of `kind` and `values` object. We sho
 | contains  | AND             | string                          | string MUST contain all of list values                  |
 | blacklist | AND             | string                          | string MUST NOT be equals to blacklist strings          |
 
+And `releasenote` section, you can declare execute making relasenote branch, tag, and integration setting.
+Full validation configuration examples are following:
+
+| kind                | value type        | value type                      | behaves                                                   |
+|:--------------------|:------------------|:--------------------------------|:----------------------------------------------------------|
+| branches            | array of string   | string or regexp string         | exact brnach name or regular expression                   |
+| tags                | array of string   | regexp string                   | tag format matching regular expression                    |
+| integrations        | map[string]string | -                               | -                                                         |
+| integrations[key]   | string            | integration type string         | Currently support `slack` only                            |
+| integrations[value] | string            | integration value string        | on `slack` type, value must be valid incoming-webhook URL |
 
 ## Collection of release note
 
@@ -81,8 +102,10 @@ Implement special feature which user requested.
 
 Then release note is listed with `Implement special feature which user requested.` from this PullRequest.
 
-And this service can determines branch of collect relase note branch, it means `your release branch ` of webhook path following `/webhook/`.
-If you set webhook URL as `https://[your.host.domain]/webhook/deployment/production`, release note will collect on `deployment/production` branch.
+## License
 
-You may want to release multiple apllication from single repository (e.g. monorepo), webhook allows to multiple branches by setting path as regex style.
-For example, If you set webhook URL as `https://[your.host.domain]/webhook/deployment/*`, we compares target branch with regular expression so you can make release note for `deployment/service-1`, `deployment/service-2` branches PullRequest.
+MIT
+
+## Author
+
+Yoshiaki Sugimoto

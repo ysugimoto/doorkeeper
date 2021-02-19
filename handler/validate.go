@@ -13,7 +13,7 @@ import (
 )
 
 // goroutine
-func validatePullRequest(evt entity.GithubPullRequestEvent) {
+func validatePullRequest(evt entity.GithubPullRequestEvent, r *rule.Rule) {
 	ctx, timeout := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer timeout()
 
@@ -56,12 +56,6 @@ func validatePullRequest(evt entity.GithubPullRequestEvent) {
 			log.Println("Failed to update shcek status as success:", err)
 		}
 	}()
-
-	// Get .pullrequest.yml file from destination repository
-	r, err := github.Content(ctx, evt.ContentURL("/.doorkeeper.yml"))
-	if err != nil {
-		r = rule.DefaultRule
-	}
 
 	errors := make([]string, 0, 2)
 	if err := r.ValidateTitle(evt.PullRequest.Title); err != nil {

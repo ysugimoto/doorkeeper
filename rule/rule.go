@@ -20,14 +20,25 @@ type RuleItem struct {
 	Values []string `yaml:"values"`
 }
 
-type Rule struct {
+type ValidateRule struct {
 	Title       []RuleItem `yaml:"title"`
 	Description []RuleItem `yaml:"description"`
 }
 
+type ReleaseNote struct {
+	Branches    []string          `yaml:"branches"`
+	Tags        []string          `yaml:"tags"`
+	Integration map[string]string `yaml:"integration"`
+}
+
+type Rule struct {
+	Validation  ValidateRule `yaml:"validation"`
+	ReleaseNote ReleaseNote  `yaml:"relasenote"`
+}
+
 func (r *Rule) ValidateTitle(title string) error {
-	for i := range r.Title {
-		if err := r.validate(r.Title[i], title); err != nil {
+	for i := range r.Validation.Title {
+		if err := r.validate(r.Validation.Title[i], title); err != nil {
 			return fmt.Errorf("Invalid PR title: %s", err)
 		}
 	}
@@ -35,8 +46,8 @@ func (r *Rule) ValidateTitle(title string) error {
 }
 
 func (r *Rule) ValidateDescription(desc string) error {
-	for i := range r.Description {
-		if err := r.validate(r.Description[i], desc); err != nil {
+	for i := range r.Validation.Description {
+		if err := r.validate(r.Validation.Description[i], desc); err != nil {
 			return fmt.Errorf("Invalid PR description: %s", err)
 		}
 	}
@@ -95,9 +106,40 @@ func (r *Rule) validate(item RuleItem, dat string) error {
 	}
 }
 
+func (r *Rule) MatchBranch(branch string) (bool, error) {
+	for i := range r.ReleaseNote.Branches {
+		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
+			return false, err
+		} else if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *Rule) MatchTag(tag string) (bool, error) {
+	for i := range r.ReleaseNote.Tags {
+		if matched, err := regexp.MatchString(r.ReleaseNote.Tags[i], tag); err != nil {
+			return false, err
+		} else if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *Rule) Integration() map[string]string {
+	return r.ReleaseNote.Integration
+}
+
 var DefaultRule = &Rule{
-	Title: []RuleItem{
-		{Kind: "blacklist", Values: []string{"fix", "feature", "implement"}},
+	Validation: ValidateRule{
+		Title: []RuleItem{
+			{Kind: "blacklist", Values: []string{"fix", "feature", "implement"}},
+		},
+		Description: []RuleItem{},
 	},
-	Description: []RuleItem{},
+	ReleaseNote: ReleaseNote{
+		Branches: []string{"deployment/production"},
+	},
 }
