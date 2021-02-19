@@ -29,8 +29,9 @@ type GithubPullRequestLink struct {
 }
 
 type GithubPullRequestRepository struct {
-	FullName string                           `json:"full_name"`
-	Owner    GithubPullRequestRepositoryOwner `json:"owner"`
+	FullName     string                           `json:"full_name"`
+	Owner        GithubPullRequestRepositoryOwner `json:"owner"`
+	MasterBranch string                           `json:"master_branch"`
 }
 
 type GithubPullRequestRepositoryOwner struct {
