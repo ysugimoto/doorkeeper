@@ -8,15 +8,15 @@ import (
 )
 
 type GithubPullRequestEvent struct {
-	Action      string                      `json:"action"`
-	Number      int                         `json:"number"`
-	PullRequest GithubPullRequest           `json:"pull_request"`
-	Repository  GithubPullRequestRepository `json:"repository"`
+	Action      string            `json:"action"`
+	Number      int               `json:"number"`
+	PullRequest GithubPullRequest `json:"pull_request"`
+	Repository  GithubRepository  `json:"repository"`
 }
 
 type GithubPullRequest struct {
 	Links      map[string]GithubPullRequestLink `json:"_links"`
-	Repository GithubPullRequestRepository      `json:"repo"`
+	Repository GithubRepository                 `json:"repo"`
 	Number     int                              `json:"number"`
 	Title      string                           `json:"title"`
 	Body       string                           `json:"body"`
@@ -28,18 +28,22 @@ type GithubPullRequestLink struct {
 	Href string `json:"href"`
 }
 
-type GithubPullRequestRepository struct {
-	FullName     string                           `json:"full_name"`
-	Owner        GithubPullRequestRepositoryOwner `json:"owner"`
-	MasterBranch string                           `json:"master_branch"`
+type GithubRepository struct {
+	FullName     string                `json:"full_name"`
+	Owner        GithubRepositoryOwner `json:"owner"`
+	MasterBranch string                `json:"master_branch"`
 }
 
-type GithubPullRequestRepositoryOwner struct {
+type GithubRepositoryOwner struct {
 	Login string `json:"login"`
 }
 
 type GithubPullRequestBranch struct {
 	Ref string `json:"ref"`
+}
+
+func (e GithubPullRequestEvent) RepositoryPath() string {
+	return e.Repository.FullName
 }
 
 func (e GithubPullRequestEvent) HeadBranch() string {
@@ -88,8 +92,4 @@ func (e GithubPullRequestEvent) ContentURL(path string) string {
 		e.Repository.FullName,
 		strings.TrimPrefix(path, "/"),
 	)
-}
-
-func (e GithubPullRequestEvent) RepositoryPath() string {
-	return e.Repository.FullName
 }
