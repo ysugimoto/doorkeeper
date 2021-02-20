@@ -8,10 +8,10 @@ import (
 )
 
 type GithubPushEvent struct {
-	Ref        string                      `json:"ref"`
-	Before     string                      `json:"before"`
-	After      string                      `json:"after"`
-	Repository GithubPullRequestRepository `json:"repository"`
+	Ref        string           `json:"ref"`
+	Before     string           `json:"before"`
+	After      string           `json:"after"`
+	Repository GithubRepository `json:"repository"`
 }
 
 func (e GithubPushEvent) CurrentTag() *Tag {

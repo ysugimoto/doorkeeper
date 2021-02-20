@@ -10,19 +10,14 @@ import (
 	"github.com/ysugimoto/doorkeeper/entity"
 )
 
-func Tags(ctx context.Context, url string) (entity.Tags, error) {
-	resp, err := sendGithubRequest(
-		ctx,
-		http.MethodGet,
-		url,
-		nil,
-		"application/vnd.github.v3+json",
-	)
-
+// Tag lists all tags in repository
+func (c *Client) Tags(ctx context.Context, url string) (entity.Tags, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, githubBasicHeader)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to call content request: %w", err)
 	}
 	defer resp.Body.Close()
+
 	var body []struct {
 		Ref    string `json:"ref"`
 		Object struct {

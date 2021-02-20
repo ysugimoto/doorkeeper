@@ -11,19 +11,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func Content(ctx context.Context, url string) (*rule.Rule, error) {
-	resp, err := sendGithubRequest(
-		ctx,
-		http.MethodGet,
-		url,
-		nil,
-		"application/vnd.github.v3+json",
-	)
-
+// RuleFile get content file from repostory and make rule
+func (c *Client) RuleFile(ctx context.Context, u string) (*rule.Rule, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, u, nil, githubBasicHeader)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to call content request: %w", err)
+		return nil, fmt.Errorf("Failed to call content request: %s,  %w", u, err)
 	}
 	defer resp.Body.Close()
+
 	var content struct {
 		Content string `json:"content"`
 	}

@@ -15,12 +15,12 @@ import (
 var releaseSectionRegex = regexp.MustCompile(`(?s)<!--\s*RELEASE\s*-->(.+?)<!--\s*/RELEASE\s*-->`)
 
 // goroutine
-func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
+func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent) {
 	ctx, timeout := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer timeout()
 
 	// Firstly, create status as "pending"
-	err := github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+	err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 		Status:      "pending",
 		Context:     "grc:relasenote",
 		Description: "factoty release note",
@@ -34,7 +34,7 @@ func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
 	defer func() {
 		if factoryErr != nil {
 			// Update to "failure" status
-			github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+			c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 				Status:      "failure",
 				Context:     "grc:relasenote",
 				Description: "factory release note",
@@ -42,7 +42,7 @@ func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
 			return
 		}
 		// Otherwise, update to "success"
-		github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+		c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 			Status:      "success",
 			Context:     "grc:relasenote",
 			Description: "factory release note",
@@ -50,7 +50,7 @@ func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
 	}()
 
 	// Step1. compare refs in order to get included PRs
-	commits, err := github.Compare(ctx, evt.CompareURL())
+	commits, err := c.Compare(ctx, evt.CompareURL())
 	if err != nil {
 		log.Printf("Failed to compare refs: %s, error: %s\n", evt.CompareURL(), err)
 		factoryErr = err
@@ -63,7 +63,7 @@ func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
 	stack := make(map[int]struct{})
 	for i := range commits {
 		sha := commits[i].Sha
-		prs, err := github.PullRequests(ctx, evt.PullRequestURL(sha))
+		prs, err := c.PullRequests(ctx, evt.PullRequestURL(sha))
 		if err != nil {
 			log.Printf("Failed to get commit-related pullrequests: %s, error: %s\n", evt.PullRequestURL(sha), err)
 			factoryErr = err
@@ -91,7 +91,7 @@ func factoryRelaseNotes(evt entity.GithubPullRequestEvent) {
 	}
 
 	// And add review comment with release note
-	github.Review(ctx, evt.ReviewURL(), entity.GithubReview{
+	c.Review(ctx, evt.ReviewURL(), entity.GithubReview{
 		Body:  message,
 		Event: "COMMENT",
 	})

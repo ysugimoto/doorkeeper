@@ -13,12 +13,12 @@ import (
 )
 
 // goroutine
-func validatePullRequest(evt entity.GithubPullRequestEvent, r *rule.Rule) {
+func validatePullRequest(c *github.Client, evt entity.GithubPullRequestEvent, r *rule.Rule) {
 	ctx, timeout := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer timeout()
 
 	// Firstly, create status as "pending"
-	if err := github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+	if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 		Status:      "pending",
 		Context:     "grc:validate",
 		Description: "validate pull request",
@@ -31,7 +31,7 @@ func validatePullRequest(evt entity.GithubPullRequestEvent, r *rule.Rule) {
 	defer func() {
 		if statusErr != nil {
 			// Update to "failure" status
-			if err := github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+			if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 				Status:      "failure",
 				Context:     "grc:validate",
 				Description: "validate pull request",
@@ -39,7 +39,7 @@ func validatePullRequest(evt entity.GithubPullRequestEvent, r *rule.Rule) {
 				log.Println("Failed to update check status as pending:", err)
 			}
 			// And add review comment what is invalid
-			if err := github.Review(ctx, evt.ReviewURL(), entity.GithubReview{
+			if err := c.Review(ctx, evt.ReviewURL(), entity.GithubReview{
 				Body:  statusErr.Error(),
 				Event: "COMMENT",
 			}); err != nil {
@@ -48,7 +48,7 @@ func validatePullRequest(evt entity.GithubPullRequestEvent, r *rule.Rule) {
 			return
 		}
 		// Otherwise, update to "success"
-		if err := github.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+		if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 			Status:      "success",
 			Context:     "grc:validate",
 			Description: "validate pull request",

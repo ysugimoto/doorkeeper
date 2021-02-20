@@ -21,11 +21,13 @@ type RuleItem struct {
 }
 
 type ValidateRule struct {
+	Disable     bool       `yaml:"disable"`
 	Title       []RuleItem `yaml:"title"`
 	Description []RuleItem `yaml:"description"`
 }
 
 type ReleaseNote struct {
+	Disable     bool              `yaml:"disable"`
 	Branches    []string          `yaml:"branches"`
 	Tags        []string          `yaml:"tags"`
 	Integration map[string]string `yaml:"integration"`
@@ -38,7 +40,7 @@ type Rule struct {
 
 func (r *Rule) ValidateTitle(title string) error {
 	for i := range r.Validation.Title {
-		if err := r.validate(r.Validation.Title[i], title); err != nil {
+		if err := r.Validation.Title[i].validate(title); err != nil {
 			return fmt.Errorf("Invalid PR title: %s", err)
 		}
 	}
@@ -47,14 +49,40 @@ func (r *Rule) ValidateTitle(title string) error {
 
 func (r *Rule) ValidateDescription(desc string) error {
 	for i := range r.Validation.Description {
-		if err := r.validate(r.Validation.Description[i], desc); err != nil {
+		if err := r.Validation.Description[i].validate(desc); err != nil {
 			return fmt.Errorf("Invalid PR description: %s", err)
 		}
 	}
 	return nil
 }
 
-func (r *Rule) validate(item RuleItem, dat string) error {
+func (r *Rule) MatchBranch(branch string) (bool, error) {
+	for i := range r.ReleaseNote.Branches {
+		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
+			return false, err
+		} else if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *Rule) MatchTag(tag string) (bool, error) {
+	for i := range r.ReleaseNote.Tags {
+		if matched, err := regexp.MatchString(r.ReleaseNote.Tags[i], tag); err != nil {
+			return false, err
+		} else if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *Rule) Integration() map[string]string {
+	return r.ReleaseNote.Integration
+}
+
+func (item RuleItem) validate(dat string) error {
 	var matched bool
 
 	switch item.Kind {
@@ -104,32 +132,6 @@ func (r *Rule) validate(item RuleItem, dat string) error {
 	default:
 		return fmt.Errorf("Unexpected validation kind: %s", item.Kind)
 	}
-}
-
-func (r *Rule) MatchBranch(branch string) (bool, error) {
-	for i := range r.ReleaseNote.Branches {
-		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
-			return false, err
-		} else if matched {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (r *Rule) MatchTag(tag string) (bool, error) {
-	for i := range r.ReleaseNote.Tags {
-		if matched, err := regexp.MatchString(r.ReleaseNote.Tags[i], tag); err != nil {
-			return false, err
-		} else if matched {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (r *Rule) Integration() map[string]string {
-	return r.ReleaseNote.Integration
 }
 
 var DefaultRule = &Rule{

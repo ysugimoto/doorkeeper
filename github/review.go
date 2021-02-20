@@ -9,18 +9,13 @@ import (
 	"github.com/ysugimoto/doorkeeper/entity"
 )
 
-func Review(ctx context.Context, url string, r entity.GithubReview) error {
-	resp, err := sendGithubRequest(
-		ctx,
-		http.MethodPost,
-		url,
-		r,
-		"application/vnd.github.v3+json",
-	)
-
+// Review create review comment to destination pullrequest
+func (c *Client) Review(ctx context.Context, url string, r entity.GithubReview) error {
+	resp, err := c.apiRequest(ctx, http.MethodPost, url, r, githubBasicHeader)
 	if err != nil {
 		return fmt.Errorf("Failed to call review request: %w", err)
 	}
+
 	resp.Body.Close()
 	return nil
 }

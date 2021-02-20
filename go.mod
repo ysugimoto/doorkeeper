@@ -2,4 +2,7 @@ module github.com/ysugimoto/doorkeeper
 
 go 1.15
 
-require gopkg.in/yaml.v2 v2.4.0
+require (
+	github.com/google/go-cmp v0.5.4
+	gopkg.in/yaml.v2 v2.4.0
+)

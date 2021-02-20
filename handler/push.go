@@ -21,7 +21,7 @@ const (
 )
 
 // goroutine
-func processTagPushEvent(evt entity.GithubPushEvent, r *rule.Rule) {
+func processTagPushEvent(c *github.Client, evt entity.GithubPushEvent, r *rule.Rule) {
 	ctx, timeout := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer timeout()
 
@@ -31,7 +31,7 @@ func processTagPushEvent(evt entity.GithubPushEvent, r *rule.Rule) {
 		return
 	}
 
-	tags, err := github.Tags(ctx, evt.TagsURL())
+	tags, err := c.Tags(ctx, evt.TagsURL())
 	if err != nil {
 		log.Printf("Failed to retrieve tag lists: %s", err)
 		return
@@ -44,7 +44,7 @@ func processTagPushEvent(evt entity.GithubPushEvent, r *rule.Rule) {
 		}
 	}
 
-	commits, err := github.Compare(ctx, evt.CompareURL(currentTag, previousTag))
+	commits, err := c.Compare(ctx, evt.CompareURL(currentTag, previousTag))
 	if err != nil {
 		log.Printf("Failed to compare refs: %s, error: %s\n", evt.CompareURL(currentTag, previousTag), err)
 		return
@@ -56,7 +56,7 @@ func processTagPushEvent(evt entity.GithubPushEvent, r *rule.Rule) {
 	stack := make(map[int]struct{})
 	for i := range commits {
 		sha := commits[i].Sha
-		prs, err := github.PullRequests(ctx, evt.PullRequestURL(sha))
+		prs, err := c.PullRequests(ctx, evt.PullRequestURL(sha))
 		if err != nil {
 			log.Printf("Failed to get commit-related pullrequests: %s, error: %s\n", evt.PullRequestURL(sha), err)
 			return
