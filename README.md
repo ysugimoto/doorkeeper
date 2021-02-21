@@ -23,6 +23,11 @@ go run cmd/main.go
 
 Webhook server will start on "http://localhost:9000". You can change listen port by setting `PORT` environment variable.
 
+## Webhook Secret
+
+Regarding request comes from expected Github webhook, you need to generate secret and verify signature for each request.
+Generate random secret and set environment variable named `WEBHOOK_SECRET`, and full out secret value in Github webhook secret input.
+
 ## PullRequest validation rules
 
 Webhook server will validate your PullRequest title and description, then you can customize validation rules by putting `.doorkeeper.yml` on your repository root. Example setting file is following:
