@@ -28,15 +28,15 @@ type ValidateRule struct {
 }
 
 type ReleaseNote struct {
-	Disable     bool              `yaml:"disable"`
-	Branches    []string          `yaml:"branches"`
-	Tags        []string          `yaml:"tags"`
-	Integration map[string]string `yaml:"integration"`
+	Disable  bool     `yaml:"disable"`
+	Branches []string `yaml:"branches"`
+	Tags     []string `yaml:"tags"`
 }
 
 type Rule struct {
-	Validation  ValidateRule `yaml:"validation"`
-	ReleaseNote ReleaseNote  `yaml:"relasenote"`
+	Validation   ValidateRule      `yaml:"validation"`
+	ReleaseNote  ReleaseNote       `yaml:"relasenote"`
+	Integrations map[string]string `yaml:"integration"`
 }
 
 func (r *Rule) ValidateTitle(title string) error {
@@ -88,7 +88,7 @@ func (r *Rule) MatchTag(tag string) (bool, error) {
 }
 
 func (r *Rule) Integration() map[string]string {
-	return r.ReleaseNote.Integration
+	return r.Integrations
 }
 
 func (item RuleItem) validate(dat string) error {

@@ -45,19 +45,29 @@ validation:
       values:
         - "# Why do we need this change"
         - "# What change do you intend to"
+  branches:
+    - feature/*
 releasenote:
   branches:
     - deployment/production
   tags:
     - v[0-9]+.[0-9]+.[0-9]+
-  integration:
-    slack: "[slack-incoming-webhook-url]"
+integration:
+  slack: "[slack-incoming-webhook-url]"
 ```
 
-`.doorkeeper.yml` can define validation and relesenote configuration.
+You can configure webhook behavior in root of `.doorkeeper.yml`. This file is able to have three root section
 
-On `validation` section, you can declare verification rule in array of `kind` and `values` object.
-Full validation configuration examples are following:
+### validation field
+
+| kind                | value type        | value description               | behaves                                                   |
+|:--------------------|:------------------|:--------------------------------|:----------------------------------------------------------|
+| branches            | array of string   | string or regexp string         | exact branch name or regular expression to run validation |
+| title               | array of object   | have kind and value field       | validation setting for pullrequest title                  |
+| description         | array of object   | have kind and value field       | validation setting for pullrequest title                  |
+
+On `title` and `description` section, you can declare verification rule in array of `kind` and `values` object.
+Validation rule configuration examples are following:
 
 
 | kind      | values operator | value type                      | behaves                                                 |
@@ -67,13 +77,22 @@ Full validation configuration examples are following:
 | contains  | AND             | string                          | string MUST contain all of list values                  |
 | blacklist | AND             | string                          | string MUST NOT be equals to blacklist strings          |
 
-And `releasenote` section, you can declare execute making relasenote branch, tag, and integration setting.
+### relasenote field
+
+On `releasenote` field, you can declare execute making relasenote branch, tag, and integration setting.
 Full validation configuration examples are following:
 
-| kind                | value type        | value type                      | behaves                                                   |
-|:--------------------|:------------------|:--------------------------------|:----------------------------------------------------------|
-| branches            | array of string   | string or regexp string         | exact brnach name or regular expression                   |
-| tags                | array of string   | regexp string                   | tag format matching regular expression                    |
+| kind                | value type        | value type                      | behaves                                                        |
+|:--------------------|:------------------|:--------------------------------|:---------------------------------------------------------------|
+| branches            | array of string   | string or regexp string         | exact brnach name or regular expression to factory releasenote |
+| tags                | array of string   | regexp string                   | tag format matching regular expression                         |
+
+### integration field
+
+On `integration` field, you can declare notification setting for validation and releasenote process result.
+Currently, only supports `slack` integration.
+
+
 | integrations        | map[string]string | -                               | -                                                         |
 | integrations[key]   | string            | integration type string         | Currently support `slack` only                            |
 | integrations[value] | string            | integration value string        | on `slack` type, value must be valid incoming-webhook URL |
