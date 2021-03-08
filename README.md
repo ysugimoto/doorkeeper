@@ -60,7 +60,7 @@ You can configure webhook behavior in root of `.doorkeeper.yml`. This file is ab
 
 ### validation field
 
-| kind                | value type        | value description               | behaves                                                   |
+| key                 | value type        | value description               | behaves                                                   |
 |:--------------------|:------------------|:--------------------------------|:----------------------------------------------------------|
 | branches            | array of string   | string or regexp string         | exact branch name or regular expression to run validation |
 | title               | array of object   | have kind and value field       | validation setting for pullrequest title                  |
@@ -82,7 +82,7 @@ Validation rule configuration examples are following:
 On `releasenote` field, you can declare execute making relasenote branch, tag, and integration setting.
 Full validation configuration examples are following:
 
-| kind                | value type        | value type                      | behaves                                                        |
+| key                 | value type        | value description                      | behaves                                                        |
 |:--------------------|:------------------|:--------------------------------|:---------------------------------------------------------------|
 | branches            | array of string   | string or regexp string         | exact brnach name or regular expression to factory releasenote |
 | tags                | array of string   | regexp string                   | tag format matching regular expression                         |
@@ -93,6 +93,8 @@ On `integration` field, you can declare notification setting for validation and 
 Currently, only supports `slack` integration.
 
 
+| key                 | value type        | value description                      | behaves                                                        |
+|:--------------------|:------------------|:--------------------------------|:---------------------------------------------------------------|
 | integrations        | map[string]string | -                               | -                                                         |
 | integrations[key]   | string            | integration type string         | Currently support `slack` only                            |
 | integrations[value] | string            | integration value string        | on `slack` type, value must be valid incoming-webhook URL |
