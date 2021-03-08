@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -25,9 +26,13 @@ func (c *Client) RuleFile(ctx context.Context, u string) (*rule.Rule, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&content); err != nil {
 		return nil, fmt.Errorf("Failed to decode response: %w", err)
 	}
+	data, err := base64.StdEncoding.DecodeString(content.Content)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to decode content: %w", err)
+	}
 
 	var r rule.Rule
-	if err := yaml.Unmarshal([]byte(content.Content), &r); err != nil {
+	if err := yaml.Unmarshal(data, &r); err != nil {
 		return nil, fmt.Errorf("Failed to unmarshal yaml: %w", err)
 	}
 
