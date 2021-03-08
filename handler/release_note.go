@@ -10,12 +10,13 @@ import (
 
 	"github.com/ysugimoto/doorkeeper/entity"
 	"github.com/ysugimoto/doorkeeper/github"
+	"github.com/ysugimoto/doorkeeper/rule"
 )
 
 var releaseSectionRegex = regexp.MustCompile(`(?s)<!--\s*RELEASE\s*-->(.+?)<!--\s*/RELEASE\s*-->`)
 
 // goroutine
-func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent) {
+func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *rule.Rule) {
 	ctx, timeout := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer timeout()
 
@@ -95,4 +96,15 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent) {
 		Body:  message,
 		Event: "COMMENT",
 	})
+
+	integration := r.Integration()
+	for k, v := range integration {
+		switch k {
+		case integrationTypeSlack:
+			if err := sendToSlack(ctx, v, message); err != nil {
+				log.Printf("Failed to send slack notification, error: %s\n", err)
+				return
+			}
+		}
+	}
 }

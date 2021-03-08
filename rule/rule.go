@@ -24,6 +24,7 @@ type ValidateRule struct {
 	Disable     bool       `yaml:"disable"`
 	Title       []RuleItem `yaml:"title"`
 	Description []RuleItem `yaml:"description"`
+	Branches    []string   `yaml:"branches"`
 }
 
 type ReleaseNote struct {
@@ -56,7 +57,15 @@ func (r *Rule) ValidateDescription(desc string) error {
 	return nil
 }
 
-func (r *Rule) MatchBranch(branch string) (bool, error) {
+func (r *Rule) MatchValidateBranch(branch string) (bool, error) {
+	return r.matchBranch(branch, r.Validation.Branches)
+}
+
+func (r *Rule) MatchReleaseNoteBranch(branch string) (bool, error) {
+	return r.matchBranch(branch, r.ReleaseNote.Branches)
+}
+
+func (r *Rule) matchBranch(branch string, targets []string) (bool, error) {
 	for i := range r.ReleaseNote.Branches {
 		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
 			return false, err
