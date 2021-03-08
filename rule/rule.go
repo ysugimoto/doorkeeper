@@ -35,7 +35,7 @@ type ReleaseNote struct {
 
 type Rule struct {
 	Validation  ValidateRule `yaml:"validation"`
-	ReleaseNote ReleaseNote  `yaml:"relasenote"`
+	ReleaseNote ReleaseNote  `yaml:"releasenote"`
 }
 
 func (r *Rule) ValidateTitle(title string) error {
