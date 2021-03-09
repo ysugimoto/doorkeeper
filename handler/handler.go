@@ -2,10 +2,12 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"crypto/hmac"
 	"crypto/sha256"
@@ -73,23 +75,23 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 					if !rr.Validation.Disable {
 						go validatePullRequest(c, evt, rr)
 					}
-					if ok, _ := rr.MatchBranch(evt.BaseBranch()); ok {
+					if ok, _ := rr.MatchValidateBranch(evt.BaseBranch()); ok {
 						if !rr.ReleaseNote.Disable {
-							go factoryRelaseNotes(c, evt)
+							go factoryRelaseNotes(c, evt, rr)
 						}
 					}
 
-					// When pullrequest has been edited, only runs validate
+				// When pullrequest has been edited, only runs validate
 				case githubPullRequestActionEdited:
 					if !rr.Validation.Disable {
 						go validatePullRequest(c, evt, rr)
 					}
 
-					// When pullrequest has been synchronized, only runs factory release notes
+				// When pullrequest has been synchronized, only runs factory release notes
 				case githubPullRequestActionSynchronize:
-					if ok, _ := rr.MatchBranch(evt.BaseBranch()); ok {
+					if ok, _ := rr.MatchReleaseNoteBranch(evt.BaseBranch()); ok {
 						if !rr.ReleaseNote.Disable {
-							go factoryRelaseNotes(c, evt)
+							go factoryRelaseNotes(c, evt, rr)
 						}
 					}
 				}
@@ -158,4 +160,28 @@ func compareSignature(r *http.Request) bool {
 	mac.Write(buf.Bytes())
 	expected := append([]byte("sha256="), []byte(fmt.Sprintf("%x", mac.Sum(nil)))...)
 	return hmac.Equal(expected, []byte(r.Header.Get("X-Hub-Signature-256")))
+}
+
+// Integration for slack
+func sendToSlack(ctx context.Context, webhookURL, message string) error {
+	body, err := json.Marshal(map[string]string{
+		"text": message,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to marshal body: %w", err)
+	}
+
+	c, timeout := context.WithTimeout(ctx, 5*time.Second)
+	defer timeout()
+
+	req, err := http.NewRequestWithContext(c, http.MethodPost, webhookURL, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("Failed to make slack request: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("Failed to get slack response: %w", err)
+	}
+	resp.Body.Close()
+	return nil
 }

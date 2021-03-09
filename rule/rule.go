@@ -24,18 +24,19 @@ type ValidateRule struct {
 	Disable     bool       `yaml:"disable"`
 	Title       []RuleItem `yaml:"title"`
 	Description []RuleItem `yaml:"description"`
+	Branches    []string   `yaml:"branches"`
 }
 
 type ReleaseNote struct {
-	Disable     bool              `yaml:"disable"`
-	Branches    []string          `yaml:"branches"`
-	Tags        []string          `yaml:"tags"`
-	Integration map[string]string `yaml:"integration"`
+	Disable  bool     `yaml:"disable"`
+	Branches []string `yaml:"branches"`
+	Tags     []string `yaml:"tags"`
 }
 
 type Rule struct {
-	Validation  ValidateRule `yaml:"validation"`
-	ReleaseNote ReleaseNote  `yaml:"releasenote"`
+	Validation   ValidateRule      `yaml:"validation"`
+	ReleaseNote  ReleaseNote       `yaml:"releasenote"`
+	Integrations map[string]string `yaml:"integration"`
 }
 
 func (r *Rule) ValidateTitle(title string) error {
@@ -56,7 +57,15 @@ func (r *Rule) ValidateDescription(desc string) error {
 	return nil
 }
 
-func (r *Rule) MatchBranch(branch string) (bool, error) {
+func (r *Rule) MatchValidateBranch(branch string) (bool, error) {
+	return r.matchBranch(branch, r.Validation.Branches)
+}
+
+func (r *Rule) MatchReleaseNoteBranch(branch string) (bool, error) {
+	return r.matchBranch(branch, r.ReleaseNote.Branches)
+}
+
+func (r *Rule) matchBranch(branch string, targets []string) (bool, error) {
 	for i := range r.ReleaseNote.Branches {
 		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
 			return false, err
@@ -79,7 +88,7 @@ func (r *Rule) MatchTag(tag string) (bool, error) {
 }
 
 func (r *Rule) Integration() map[string]string {
-	return r.ReleaseNote.Integration
+	return r.Integrations
 }
 
 func (item RuleItem) validate(dat string) error {

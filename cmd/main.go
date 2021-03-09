@@ -13,7 +13,12 @@ func main() {
 	if v := os.Getenv("PORT"); v != "" {
 		port = v
 	}
-	if err := http.ListenAndServe(":"+port, handler.WebhookHandler("/webhook", nil)); err != nil {
+
+	log.Printf("Server starts on :%s", port)
+	if err := http.ListenAndServe(
+		":"+port,
+		handler.WebhookHandler("/webhook", nil),
+	); err != nil {
 		log.Fatalln(err)
 	}
 }
