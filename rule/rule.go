@@ -66,8 +66,8 @@ func (r *Rule) MatchReleaseNoteBranch(branch string) (bool, error) {
 }
 
 func (r *Rule) matchBranch(branch string, targets []string) (bool, error) {
-	for i := range r.ReleaseNote.Branches {
-		if matched, err := regexp.MatchString(r.ReleaseNote.Branches[i], branch); err != nil {
+	for i := range targets {
+		if matched, err := regexp.MatchString(targets[i], branch); err != nil {
 			return false, err
 		} else if matched {
 			return true, nil
