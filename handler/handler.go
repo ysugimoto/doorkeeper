@@ -72,10 +72,13 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 
 				// When new pullrequest has been opened, run validate and factory relates note
 				case githubPullRequestActionOpened:
-					if !rr.Validation.Disable {
-						go validatePullRequest(c, evt, rr)
-					}
 					if ok, _ := rr.MatchValidateBranch(evt.BaseBranch()); ok {
+						if !rr.Validation.Disable {
+							go validatePullRequest(c, evt, rr)
+						}
+					}
+
+					if ok, _ := rr.MatchReleaseNoteBranch(evt.BaseBranch()); ok {
 						if !rr.ReleaseNote.Disable {
 							go factoryRelaseNotes(c, evt, rr)
 						}
@@ -83,8 +86,10 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 
 				// When pullrequest has been edited, only runs validate
 				case githubPullRequestActionEdited:
-					if !rr.Validation.Disable {
-						go validatePullRequest(c, evt, rr)
+					if ok, _ := rr.MatchValidateBranch(evt.BaseBranch()); ok {
+						if !rr.Validation.Disable {
+							go validatePullRequest(c, evt, rr)
+						}
 					}
 
 				// When pullrequest has been synchronized, only runs factory release notes
