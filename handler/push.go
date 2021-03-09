@@ -1,15 +1,11 @@
 package handler
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
-
-	"encoding/json"
-	"net/http"
 
 	"github.com/ysugimoto/doorkeeper/entity"
 	"github.com/ysugimoto/doorkeeper/github"
@@ -93,27 +89,4 @@ func processTagPushEvent(c *github.Client, evt entity.GithubPushEvent, r *rule.R
 			}
 		}
 	}
-}
-
-func sendToSlack(ctx context.Context, webhookURL, message string) error {
-	body, err := json.Marshal(map[string]string{
-		"text": message,
-	})
-	if err != nil {
-		return fmt.Errorf("Failed to marshal body: %w", err)
-	}
-
-	c, timeout := context.WithTimeout(ctx, 5*time.Second)
-	defer timeout()
-
-	req, err := http.NewRequestWithContext(c, http.MethodPost, webhookURL, bytes.NewReader(body))
-	if err != nil {
-		return fmt.Errorf("Failed to make slack request: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("Failed to get slack response: %w", err)
-	}
-	resp.Body.Close()
-	return nil
 }
