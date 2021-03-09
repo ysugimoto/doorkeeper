@@ -35,7 +35,7 @@ type ReleaseNote struct {
 
 type Rule struct {
 	Validation   ValidateRule      `yaml:"validation"`
-	ReleaseNote  ReleaseNote       `yaml:"relasenote"`
+	ReleaseNote  ReleaseNote       `yaml:"releasenote"`
 	Integrations map[string]string `yaml:"integration"`
 }
 
