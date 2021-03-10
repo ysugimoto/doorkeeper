@@ -28,6 +28,13 @@ const (
 	githubPullRequestActionOpened      = "opened"
 	githubPullRequestActionEdited      = "edited"
 	githubPullRequestActionSynchronize = "synchronize"
+
+	contextNameReleaseNote = "doorkeeper:releasenote"
+	contextNameValidation  = "doorkeeper:validate"
+
+	buildStatusPending = "pending"
+	buildStatusFailure = "failure"
+	buildStatusSuccess = "success"
 )
 
 func WebhookHandler(prefix string, c *github.Client) http.Handler {

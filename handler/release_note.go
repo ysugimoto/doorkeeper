@@ -22,8 +22,8 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 
 	// Firstly, create status as "pending"
 	err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
-		Status:      "pending",
-		Context:     "doorkeeper:relasenote",
+		Status:      buildStatusPending,
+		Context:     contextNameReleaseNote,
 		Description: "factoty release note",
 	})
 	if err != nil {
@@ -36,16 +36,16 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 		if factoryErr != nil {
 			// Update to "failure" status
 			c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
-				Status:      "failure",
-				Context:     "doorkeeper:relasenote",
+				Status:      buildStatusFailure,
+				Context:     contextNameReleaseNote,
 				Description: "factory release note",
 			})
 			return
 		}
 		// Otherwise, update to "success"
 		c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
-			Status:      "success",
-			Context:     "doorkeeper:relasenote",
+			Status:      buildStatusSuccess,
+			Context:     contextNameReleaseNote,
 			Description: "factory release note",
 		})
 	}()
