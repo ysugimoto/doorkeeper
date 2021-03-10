@@ -23,7 +23,7 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 	// Firstly, create status as "pending"
 	err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 		Status:      "pending",
-		Context:     "grc:relasenote",
+		Context:     "doorkeeper:relasenote",
 		Description: "factoty release note",
 	})
 	if err != nil {
@@ -37,7 +37,7 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 			// Update to "failure" status
 			c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 				Status:      "failure",
-				Context:     "grc:relasenote",
+				Context:     "doorkeeper:relasenote",
 				Description: "factory release note",
 			})
 			return
@@ -45,7 +45,7 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 		// Otherwise, update to "success"
 		c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
 			Status:      "success",
-			Context:     "grc:relasenote",
+			Context:     "doorkeeper:relasenote",
 			Description: "factory release note",
 		})
 	}()
@@ -91,12 +91,6 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 		)
 	}
 
-	// And add review comment with release note
-	c.Review(ctx, evt.ReviewURL(), entity.GithubReview{
-		Body:  message,
-		Event: "COMMENT",
-	})
-
 	integration := r.Integration()
 	for k, v := range integration {
 		switch k {
@@ -107,4 +101,10 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 			}
 		}
 	}
+
+	// And add review comment with release note
+	c.Review(ctx, evt.ReviewURL(), entity.GithubReview{
+		Body:  message,
+		Event: "COMMENT",
+	})
 }
