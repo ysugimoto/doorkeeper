@@ -77,9 +77,9 @@ Validation rule configuration examples are following:
 | contains  | AND             | string                          | string MUST contain all of list values                  |
 | blacklist | AND             | string                          | string MUST NOT be equals to blacklist strings          |
 
-### relasenote field
+### releasenote field
 
-On `releasenote` field, you can declare execute making relasenote branch, tag, and integration setting.
+On `releasenote` field, you can declare execute making releasenote branch, tag, and integration setting.
 Full validation configuration examples are following:
 
 | key                 | value type        | value description                      | behaves                                                        |
@@ -101,7 +101,7 @@ Currently, only supports `slack` integration.
 
 ## Collection of release note
 
-Webhook server collects release note items between base and head branch of PullRequest from pre-degined signature in order to recognize release note string.
+Webhook server collects release note items between base and head branch of PullRequest from pre-defined signature in order to recognize release note string.
 To retrieve as note, need to contain following signature in PullRequest description:
 
 ```
