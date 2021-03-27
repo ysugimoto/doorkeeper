@@ -11,8 +11,8 @@ import (
 )
 
 // PullRequests retreives related pullrequest from commit hash
-func (c *Client) PullRequests(ctx context.Context, url string) ([]entity.GithubPullRequest, error) {
-	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, githubRootPreviewHeader)
+func (c *Client) PullRequests(ctx context.Context, url, repository string) ([]entity.GithubPullRequest, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, repository, githubRootPreviewHeader)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to call pullrequests request: %w", err)
 	}

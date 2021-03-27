@@ -5,11 +5,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"encoding/json"
 	"net/http"
+	"net/http/httputil"
 )
 
 const (
@@ -20,15 +20,20 @@ const (
 )
 
 type Client struct {
-	Timeout time.Duration
-	client  *http.Client
+	client        *http.Client
+	authorization Authorization
 }
 
-func NewClient(c *http.Client) *Client {
-	return &Client{
-		Timeout: 5 * time.Second,
-		client:  c,
+func NewClient(c *http.Client, options ...Option) *Client {
+	gc := &Client{
+		client: c,
 	}
+
+	for i := range options {
+		options[i](gc)
+	}
+
+	return gc
 }
 
 // Call API request to Github
@@ -37,11 +42,9 @@ func (c *Client) apiRequest(
 	method string,
 	url string,
 	body interface{},
+	repository string,
 	acceptHeader string,
 ) (*http.Response, error) {
-
-	ctx, timeout := context.WithTimeout(ctx, c.Timeout)
-	defer timeout()
 
 	var b io.Reader
 	if body != nil {
@@ -56,11 +59,18 @@ func (c *Client) apiRequest(
 	if err != nil {
 		return nil, fmt.Errorf("Failed to make request to %s %s %w", method, url, err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
+
+	if c.authorization != nil {
+		c.authorization.Header(req, repository)
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 	if acceptHeader != "" {
 		req.Header.Set("Accept", acceptHeader)
 	}
+
+	d, _ := httputil.DumpRequest(req, true)
+	fmt.Println(string(d))
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -75,4 +85,6 @@ func (c *Client) apiRequest(
 	return resp, nil
 }
 
-var DefaultClient = NewClient(http.DefaultClient)
+func DefaultClient(options ...Option) *Client {
+	return NewClient(http.DefaultClient, options...)
+}

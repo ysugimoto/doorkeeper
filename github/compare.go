@@ -11,8 +11,8 @@ import (
 )
 
 // Compare get commits between base and head commit
-func (c *Client) Compare(ctx context.Context, url string) ([]entity.GithubCommit, error) {
-	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, "application/vnd.github.v3+json")
+func (c *Client) Compare(ctx context.Context, url, repository string) ([]entity.GithubCommit, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, repository, githubBasicHeader)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to call compare request: %w", err)
 	}

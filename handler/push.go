@@ -27,7 +27,7 @@ func processTagPushEvent(c *github.Client, evt entity.GithubPushEvent, r *rule.R
 		return
 	}
 
-	tags, err := c.Tags(ctx, evt.TagsURL())
+	tags, err := c.Tags(ctx, evt.TagsURL(), evt.Repository.FullName)
 	if err != nil {
 		log.Printf("Failed to retrieve tag lists: %s", err)
 		return
@@ -40,7 +40,7 @@ func processTagPushEvent(c *github.Client, evt entity.GithubPushEvent, r *rule.R
 		}
 	}
 
-	commits, err := c.Compare(ctx, evt.CompareURL(currentTag, previousTag))
+	commits, err := c.Compare(ctx, evt.CompareURL(currentTag, previousTag), evt.Repository.FullName)
 	if err != nil {
 		log.Printf("Failed to compare refs: %s, error: %s\n", evt.CompareURL(currentTag, previousTag), err)
 		return
@@ -52,7 +52,7 @@ func processTagPushEvent(c *github.Client, evt entity.GithubPushEvent, r *rule.R
 	stack := make(map[int]struct{})
 	for i := range commits {
 		sha := commits[i].Sha
-		prs, err := c.PullRequests(ctx, evt.PullRequestURL(sha))
+		prs, err := c.PullRequests(ctx, evt.PullRequestURL(sha), evt.Repository.FullName)
 		if err != nil {
 			log.Printf("Failed to get commit-related pullrequests: %s, error: %s\n", evt.PullRequestURL(sha), err)
 			return

@@ -11,8 +11,8 @@ import (
 )
 
 // Tag lists all tags in repository
-func (c *Client) Tags(ctx context.Context, url string) (entity.Tags, error) {
-	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, githubBasicHeader)
+func (c *Client) Tags(ctx context.Context, url, repository string) (entity.Tags, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, repository, githubBasicHeader)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to call content request: %w", err)
 	}

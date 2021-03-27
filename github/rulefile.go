@@ -13,10 +13,10 @@ import (
 )
 
 // RuleFile get content file from repostory and make rule
-func (c *Client) RuleFile(ctx context.Context, u string) (*rule.Rule, error) {
-	resp, err := c.apiRequest(ctx, http.MethodGet, u, nil, githubBasicHeader)
+func (c *Client) RuleFile(ctx context.Context, url, repostory string) (*rule.Rule, error) {
+	resp, err := c.apiRequest(ctx, http.MethodGet, url, nil, repostory, githubBasicHeader)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to call content request: %s,  %w", u, err)
+		return nil, fmt.Errorf("Failed to call content request: %s,  %w", url, err)
 	}
 	defer resp.Body.Close()
 

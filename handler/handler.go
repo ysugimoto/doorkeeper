@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -38,8 +39,10 @@ const (
 )
 
 func WebhookHandler(prefix string, c *github.Client) http.Handler {
+	secret := os.Getenv("GITHUB_APP_SECRET")
+
 	if c == nil {
-		c = github.DefaultClient
+		c = github.DefaultClient(github.WithToken(os.Getenv("GITHUB_TOKEN")))
 	}
 
 	return http.StripPrefix(
@@ -51,7 +54,7 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 			}
 
 			// Check webhook request comes from exact Github server
-			if !compareSignature(r) {
+			if !compareSignature(r, secret) {
 				w.WriteHeader(http.StatusBadRequest)
 				io.WriteString(w, "Signature unmatched")
 				return
@@ -69,7 +72,7 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				}
 
 				// Get and parse rule from destination repository
-				rr, err := c.RuleFile(r.Context(), evt.ContentURL(github.SettingFile))
+				rr, err := c.RuleFile(r.Context(), evt.ContentURL(github.SettingFile), evt.Repository.FullName)
 				if err != nil {
 					rr = rule.DefaultRule
 				}
@@ -81,12 +84,14 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				case githubPullRequestActionOpened:
 					if ok, _ := rr.MatchValidateBranch(evt.BaseBranch()); ok {
 						if !rr.Validation.Disable {
+							fmt.Println("execute validateion")
 							go validatePullRequest(c, evt, rr)
 						}
 					}
 
 					if ok, _ := rr.MatchReleaseNoteBranch(evt.BaseBranch()); ok {
 						if !rr.ReleaseNote.Disable {
+							fmt.Println("execute releasenote")
 							go factoryRelaseNotes(c, evt, rr)
 						}
 					}
@@ -95,6 +100,7 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				case githubPullRequestActionEdited:
 					if ok, _ := rr.MatchValidateBranch(evt.BaseBranch()); ok {
 						if !rr.Validation.Disable {
+							fmt.Println("execute validate")
 							go validatePullRequest(c, evt, rr)
 						}
 					}
@@ -103,6 +109,7 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				case githubPullRequestActionSynchronize:
 					if ok, _ := rr.MatchReleaseNoteBranch(evt.BaseBranch()); ok {
 						if !rr.ReleaseNote.Disable {
+							fmt.Println("execute releasenote")
 							go factoryRelaseNotes(c, evt, rr)
 						}
 					}
@@ -120,7 +127,7 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				}
 
 				// Get and parse rule from destination repository
-				rr, err := c.RuleFile(r.Context(), evt.ContentURL("/.doorkeeper.yml"))
+				rr, err := c.RuleFile(r.Context(), evt.ContentURL("/.doorkeeper.yml"), evt.Repository.FullName)
 				if err != nil {
 					rr = rule.DefaultRule
 				}
@@ -143,8 +150,8 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 			}
 
 			// Forbid other events
-			w.WriteHeader(http.StatusForbidden)
-			io.WriteString(w, "We don't support event of '"+r.Header.Get("X-Github-Event")+"'")
+			log.Println("We don't support event of '" + r.Header.Get("X-Github-Event") + "'")
+			successResponse(w)
 		}),
 	)
 }
@@ -159,16 +166,19 @@ func successResponse(w http.ResponseWriter) {
 }
 
 // compares webhook request signature with secret
-func compareSignature(r *http.Request) bool {
+func compareSignature(r *http.Request, secret string) bool {
 	buf := new(bytes.Buffer)
-	io.Copy(buf, r.Body)
+	if _, err := buf.ReadFrom(r.Body); err != nil {
+		fmt.Println("Failed to read request body")
+		return false
+	}
 
 	// Rewind request body
 	defer func() {
 		r.Body = ioutil.NopCloser(buf)
 	}()
 
-	mac := hmac.New(sha256.New, []byte(os.Getenv("WEBHOOK_SECRET")))
+	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write(buf.Bytes())
 	expected := append([]byte("sha256="), []byte(fmt.Sprintf("%x", mac.Sum(nil)))...)
 	return hmac.Equal(expected, []byte(r.Header.Get("X-Hub-Signature-256")))
