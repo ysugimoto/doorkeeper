@@ -18,7 +18,7 @@ func validatePullRequest(c *github.Client, evt entity.GithubPullRequestEvent, r 
 	defer timeout()
 
 	// Firstly, create status as "pending"
-	if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+	if err := c.Status(ctx, evt.StatusURL(), evt.Repository.FullName, entity.GithubStatus{
 		Status:      buildStatusPending,
 		Context:     contextNameValidation,
 		Description: "validate pull request",
@@ -31,7 +31,7 @@ func validatePullRequest(c *github.Client, evt entity.GithubPullRequestEvent, r 
 	defer func() {
 		if statusErr != nil {
 			// Update to "failure" status
-			if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+			if err := c.Status(ctx, evt.StatusURL(), evt.Repository.FullName, entity.GithubStatus{
 				Status:      buildStatusFailure,
 				Context:     contextNameValidation,
 				Description: "validate pull request",
@@ -39,7 +39,7 @@ func validatePullRequest(c *github.Client, evt entity.GithubPullRequestEvent, r 
 				log.Println("Failed to update check status as pending:", err)
 			}
 			// And add review comment what is invalid
-			if err := c.Review(ctx, evt.ReviewURL(), entity.GithubReview{
+			if err := c.Review(ctx, evt.ReviewURL(), evt.Repository.FullName, entity.GithubReview{
 				Body:  statusErr.Error(),
 				Event: "COMMENT",
 			}); err != nil {
@@ -48,7 +48,7 @@ func validatePullRequest(c *github.Client, evt entity.GithubPullRequestEvent, r 
 			return
 		}
 		// Otherwise, update to "success"
-		if err := c.Status(ctx, evt.StatusURL(), entity.GithubStatus{
+		if err := c.Status(ctx, evt.StatusURL(), evt.Repository.FullName, entity.GithubStatus{
 			Status:      buildStatusSuccess,
 			Context:     contextNameValidation,
 			Description: "validate pull request",

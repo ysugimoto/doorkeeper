@@ -149,6 +149,7 @@ var DefaultRule = &Rule{
 			{Kind: "blacklist", Values: []string{"fix", "feature", "implement"}},
 		},
 		Description: []RuleItem{},
+		Branches:    []string{".*"},
 	},
 	ReleaseNote: ReleaseNote{
 		Branches: []string{"deployment/production"},

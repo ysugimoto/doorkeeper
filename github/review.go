@@ -10,8 +10,8 @@ import (
 )
 
 // Review create review comment to destination pullrequest
-func (c *Client) Review(ctx context.Context, url string, r entity.GithubReview) error {
-	resp, err := c.apiRequest(ctx, http.MethodPost, url, r, githubBasicHeader)
+func (c *Client) Review(ctx context.Context, url, repository string, r entity.GithubReview) error {
+	resp, err := c.apiRequest(ctx, http.MethodPost, url, r, repository, githubBasicHeader)
 	if err != nil {
 		return fmt.Errorf("Failed to call review request: %w", err)
 	}
