@@ -18,7 +18,6 @@ import (
 
 	"github.com/ysugimoto/doorkeeper/entity"
 	"github.com/ysugimoto/doorkeeper/github"
-	"github.com/ysugimoto/doorkeeper/rule"
 )
 
 const (
