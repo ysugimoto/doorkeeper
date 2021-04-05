@@ -74,7 +74,9 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				// Get and parse rule from destination repository
 				rr, err := c.RuleFile(r.Context(), evt.ContentURL(github.SettingFile), evt.Repository.FullName)
 				if err != nil {
-					rr = rule.DefaultRule
+					w.WriteHeader(http.StatusOK)
+					io.WriteString(w, ".doorkeeper.yml not found in "+evt.Repository.FullName)
+					return
 				}
 
 				// switch actions by action
@@ -129,7 +131,9 @@ func WebhookHandler(prefix string, c *github.Client) http.Handler {
 				// Get and parse rule from destination repository
 				rr, err := c.RuleFile(r.Context(), evt.ContentURL("/.doorkeeper.yml"), evt.Repository.FullName)
 				if err != nil {
-					rr = rule.DefaultRule
+					w.WriteHeader(http.StatusOK)
+					io.WriteString(w, ".doorkeeper.yml not found in "+evt.Repository.FullName)
+					return
 				}
 
 				switch {
