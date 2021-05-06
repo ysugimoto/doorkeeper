@@ -8,7 +8,6 @@ import (
 
 	"encoding/json"
 	"net/http"
-	"net/http/httputil"
 )
 
 const (
@@ -67,9 +66,6 @@ func (c *Client) apiRequest(
 	if acceptHeader != "" {
 		req.Header.Set("Accept", acceptHeader)
 	}
-
-	d, _ := httputil.DumpRequest(req, true)
-	fmt.Println(string(d))
 
 	resp, err := c.client.Do(req)
 	if err != nil {
