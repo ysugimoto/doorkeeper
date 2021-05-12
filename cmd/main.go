@@ -26,10 +26,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	h := handler.WebhookHandler("/webhook", github.NewClient(
+	client := github.NewClient(
 		http.DefaultClient,
 		github.WithJWTToken(os.Getenv("GITHUB_APP_ID"), privKey),
-	))
+	)
+	h := handler.WebhookHandler(
+		handler.WithPrefix("/webhook"),
+		handler.WithClient(client),
+	)
 	log.Printf("Server starts on :%s", port)
 	if err := http.ListenAndServe(":"+port, h); err != nil {
 		log.Fatalln(err)
