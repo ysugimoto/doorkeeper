@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
 	"time"
 
 	"crypto/hmac"
@@ -12,6 +13,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+)
+
+var (
+	htmlCommentRegex          = regexp.MustCompile(`(?s)<!--\s*.*-->`)
+	unnecessaryCharacterRegex = regexp.MustCompile(`(?s)^[\s\t\r\n]+|[\s\t\r\n]$`)
 )
 
 func successResponse(w http.ResponseWriter) {
@@ -64,4 +70,11 @@ func sendToSlack(ctx context.Context, webhookURL, message string) error {
 	}
 	resp.Body.Close()
 	return nil
+}
+
+func formatReleaseNoteText(txt string) string {
+	return unnecessaryCharacterRegex.ReplaceAllString(
+		htmlCommentRegex.ReplaceAllString(txt, ""),
+		"",
+	)
 }
