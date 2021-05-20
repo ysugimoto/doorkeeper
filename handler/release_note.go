@@ -78,7 +78,11 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 			stack[prs[j].Number] = struct{}{}
 			matches := releaseSectionRegex.FindStringSubmatch(prs[j].Body)
 			if matches != nil {
-				notes = append(notes, fmt.Sprintf("- #%d %s", prs[j].Number, strings.TrimSpace(matches[1])))
+				notes = append(notes, fmt.Sprintf(
+					"- #%d %s",
+					prs[j].Number,
+					formatReleaseNoteText(matches[1]),
+				))
 			}
 		}
 	}
