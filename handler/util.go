@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	htmlCommentRegex          = regexp.MustCompile(`(?s)<!--\s*.*-->`)
-	unnecessaryCharacterRegex = regexp.MustCompile(`(?s)^[\s\t\r\n]+|[\s\t\r\n]$`)
+	htmlCommentRegex          = regexp.MustCompile(`(?s)<!--\s*([^>]+)?>`)
+	unnecessaryCharacterRegex = regexp.MustCompile(`(?s)^[\s\t\r\n]+|[\s\t\r\n]+$`)
 )
 
 func successResponse(w http.ResponseWriter) {
