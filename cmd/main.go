@@ -33,6 +33,7 @@ func main() {
 	h := handler.WebhookHandler(
 		handler.WithPrefix("/webhook"),
 		handler.WithClient(client),
+		handler.WithAppSecret(os.Getenv("GITHUB_APP_SECRET")),
 	)
 	log.Printf("Server starts on :%s", port)
 	if err := http.ListenAndServe(":"+port, h); err != nil {
