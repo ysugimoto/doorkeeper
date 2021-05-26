@@ -2,10 +2,8 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/ysugimoto/doorkeeper/entity"
