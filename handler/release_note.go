@@ -60,7 +60,10 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 
 	// Step2. factory related notes from merged PullRequest description
 	// Note that commit may duplicate so we need to be unique all commits by checking commit sha.
-	var notes []string
+	notes := entity.ReleaseNotes{
+		PullRequestNumber: evt.Number,
+		Repository:        evt.Repository.FullName,
+	}
 	stack := make(map[int]struct{})
 	for i := range commits {
 		sha := commits[i].Sha
@@ -78,28 +81,19 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 			stack[prs[j].Number] = struct{}{}
 			matches := releaseSectionRegex.FindStringSubmatch(prs[j].Body)
 			if matches != nil {
-				notes = append(notes, fmt.Sprintf(
-					"- #%d %s",
-					prs[j].Number,
-					formatReleaseNoteText(matches[1]),
-				))
+				notes.Notes = append(notes.Notes, &entity.ReleaseNote{
+					PullRequestNumber: prs[i].Number,
+					Note:              formatReleaseNoteText(matches[1]),
+				})
 			}
 		}
-	}
-
-	message := ":robot: There are no release notes found."
-	if len(notes) > 0 {
-		message = fmt.Sprintf(
-			":robot: Release Note collected succesfully:\n\n```\n%s\n```\n\nTake this!",
-			strings.Join(notes, "\n"),
-		)
 	}
 
 	integration := r.Integration()
 	for k, v := range integration {
 		switch k {
 		case integrationTypeSlack:
-			if err := sendToSlack(ctx, v, message); err != nil {
+			if err := sendToSlack(ctx, v, notes.SlackMessage()); err != nil {
 				log.Printf("Failed to send slack notification, error: %s\n", err)
 				return
 			}
@@ -108,7 +102,7 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 
 	// And add review comment with release note
 	c.Review(ctx, evt.ReviewURL(), evt.Repository.FullName, entity.GithubReview{
-		Body:  message,
+		Body:  notes.GitHubMessage(),
 		Event: "COMMENT",
 	})
 }
