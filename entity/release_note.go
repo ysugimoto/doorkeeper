@@ -3,6 +3,9 @@ package entity
 import (
 	"fmt"
 	"strings"
+
+	"math/rand"
+	"time"
 )
 
 const (
@@ -30,8 +33,8 @@ func (r ReleaseNotes) SlackMessage() string {
 	}
 
 	return fmt.Sprintf(
-		"%s Release Note collected succesfully on release PullRequest <https://github.com/%s/pull/%d|#%d>\n\n```\n%s\n```\n\nTake this!",
-		slackEmojiPrefix, r.Repository, r.PullRequestNumber, r.PullRequestNumber, strings.Join(notes, "\n"),
+		"%s Release Note collected succesfully on release PullRequest <https://github.com/%s/pull/%d|#%d>\n\n```\n%s\n```\n\n\n%s",
+		slackEmojiPrefix, r.Repository, r.PullRequestNumber, r.PullRequestNumber, strings.Join(notes, "\n"), randomMessage(),
 	)
 }
 
@@ -49,8 +52,8 @@ func (r ReleaseNotes) GitHubMessage() string {
 	}
 
 	return fmt.Sprintf(
-		"%s Release Note collected succesfully on release PullRequest #%d\n\n%s\n\nTake this!",
-		githubEmojiPrefix, r.PullRequestNumber, strings.Join(notes, "\n"),
+		"%s Release Note collected succesfully on release PullRequest #%d\n\n%s\n\n\n%s",
+		githubEmojiPrefix, r.PullRequestNumber, strings.Join(notes, "\n"), randomMessage(),
 	)
 }
 
@@ -68,4 +71,18 @@ func (r *ReleaseNote) SlackFormat(repo string) string {
 
 func (r *ReleaseNote) GitHubFormat(repo string) string {
 	return fmt.Sprintf("- #%d %s", r.PullRequestNumber, r.Note)
+}
+
+var randoms = []string{
+	"Take this!",
+	"Hope these releases go well :heart:",
+	"Great progress :+1:",
+	"Great, team!",
+}
+
+func randomMessage() string {
+	rand.Seed(time.Now().UnixNano())
+	idx := rand.Intn(len(randoms))
+
+	return randoms[idx]
 }
