@@ -80,7 +80,7 @@ func factoryRelaseNotes(c *github.Client, evt entity.GithubPullRequestEvent, r *
 			matches := releaseSectionRegex.FindStringSubmatch(prs[j].Body)
 			if matches != nil {
 				notes.Notes = append(notes.Notes, &entity.ReleaseNote{
-					PullRequestNumber: prs[i].Number,
+					PullRequestNumber: prs[j].Number,
 					Note:              formatReleaseNoteText(matches[1]),
 				})
 			}
